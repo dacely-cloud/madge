@@ -66,6 +66,19 @@ describe('Native TypeScript graph', () => {
 		await assert.rejects(madge(filename, {strict: true}), /Cannot resolve/);
 	});
 
+	it('resolves packages exposing only TypeScript declarations for type-only imports', async () => {
+		const dependency = path.join(directory, 'node_modules/types-only');
+		await fs.mkdir(dependency, {recursive: true});
+		await fs.writeFile(path.join(dependency, 'package.json'), '{"name":"types-only","exports":{"./options":{"types":"./options.d.ts"}}}');
+		await fs.writeFile(path.join(dependency, 'options.d.ts'), 'export interface Options {enabled:boolean}');
+		const filename = path.join(directory, 'input.ts');
+		await fs.writeFile(filename, 'import type {Options} from "types-only/options"; export type O=Options;');
+		const result = await madge(filename, {strict: true});
+		assert.deepEqual(result.warnings(), {skipped: []});
+		await fs.writeFile(filename, 'import {type Options} from "types-only/options"; export type O=Options;');
+		assert.deepEqual((await madge(filename, {strict: true})).warnings(), {skipped: []});
+	});
+
 	it('discovers owned source without scanning ignored builds or requiring a Git checkout', async () => {
 		await fs.mkdir(path.join(directory, 'src'));
 		await fs.mkdir(path.join(directory, 'build'));
