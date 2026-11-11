@@ -1,9 +1,12 @@
 {
   "name": "madge",
-  "version": "8.0.0",
+  "version": "8.1.0-dacely.0",
   "author": "Patrik Henningsson <patrik.henningsson@gmail.com>",
-  "repository": "git://github.com/pahen/madge",
-  "homepage": "https://github.com/pahen/madge",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dacely-cloud/madge.git"
+  },
+  "homepage": "https://github.com/dacely-cloud/madge",
   "license": "MIT",
   "reveal": true,
   "description": "Create graphs from module dependencies.",
@@ -21,7 +24,7 @@
     "graph"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=24.0.0"
   },
   "main": "./lib/api",
   "bin": {
@@ -44,21 +47,30 @@
     "url": "https://www.paypal.me/pahen"
   },
   "dependencies": {
+    "@babel/parser": "8.0.7",
+    "@dependents/detective-less": "6.0.1",
     "chalk": "^4.1.2",
     "commander": "^7.2.0",
     "commondir": "^1.0.1",
     "debug": "^4.3.4",
-    "dependency-tree": "^11.0.0",
+    "detective-sass": "7.0.1",
+    "detective-scss": "6.0.1",
+    "detective-stylus": "6.0.0",
+    "ignore": "7.0.14",
+    "module-lookup-amd": "10.0.0",
     "ora": "^5.4.1",
+    "oxc-parser": "0.158.0",
+    "oxc-resolver": "11.24.2",
     "pluralize": "^8.0.0",
     "pretty-ms": "^7.0.1",
     "rc": "^1.2.8",
+    "sass-lookup": "7.0.0",
     "stream-to-array": "^2.3.0",
-    "ts-graphviz": "^2.1.2",
-    "walkdir": "^0.4.1"
+    "stylus-lookup": "7.0.0",
+    "ts-graphviz": "^2.1.2"
   },
   "peerDependencies": {
-    "typescript": "^5.4.4"
+    "typescript": ">=7.0.0"
   },
   "peerDependenciesMeta": {
     "typescript": {
@@ -69,10 +81,17 @@
     "@aptoma/eslint-config": "^7.0.1",
     "auto-changelog": "^2.4.0",
     "eslint": "^7.29.0",
-    "mocha": "^9.0.1",
+    "mocha": "12.0.3",
     "mz": "^2.7.0",
     "release-it": "^16.2.1",
     "should": "^13.2.3",
-    "typescript": "^5.4.4"
-  }
+    "typescript": "7.0.2"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ]
 }

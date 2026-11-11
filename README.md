@@ -12,7 +12,27 @@
   </a>
 </p>
 
-**Madge** is a developer tool for generating a visual graph of your module dependencies, finding circular dependencies, and giving you other useful info. Joel Kemp's awesome [dependency-tree](https://github.com/mrjoelkemp/node-dependency-tree) is used for extracting the dependency tree.
+**Madge** is a developer tool for generating a visual graph of your module dependencies, finding circular dependencies, and giving you other useful info.
+
+## Dacely fork: TypeScript 7
+
+This fork uses OXC's native parser and resolver. It does not load the removed JavaScript
+TypeScript compiler API or install an older compiler. Node.js 24 or newer is required.
+Type-only imports, re-exports, `import()` types, CommonJS imports and literal dynamic
+imports all contribute edges by default. Inherited tsconfig paths and `.js` imports
+pointing at `.ts` source are resolved without compiling the project.
+
+Use `--circular --strict --extensions ts,tsx,mts,cts,js,jsx,mjs,cjs --ts-config tsconfig.json`
+to enforce a build gate. Circular graphs return exit code 1, including with `--json`.
+Strict mode also rejects source parse failures and every unresolved import, including
+path aliases. Declare individual bundler virtual modules or optional external packages
+in `externalModules`; this exact-specifier list must never contain project source.
+Set `respectGitIgnore: true` to discover all owned source from a repository root without
+walking installed dependencies or ignored build outputs. Nested ignore files and their
+negated patterns are supported, and a Git checkout is not required.
+The `tsConfig` option retains the supplied filename; it is no longer converted into
+an internal TypeScript compiler configuration object. Mixed CommonJS and ESM edges
+are detected together by default.
 
 * Works for JavaScript (AMD, CommonJS, and ES6 modules)
 * Also works for CSS preprocessors (Sass, Stylus, and Less)

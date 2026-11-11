@@ -38,6 +38,7 @@ program
 	.option('--no-count', 'disable circular dependencies counting', false)
 	.option('--stdin', 'read predefined tree from STDIN', false)
 	.option('--warning', 'show warnings about skipped files', false)
+	.option('--strict', 'fail on source parse errors or unresolved local imports', false)
 	.option('--debug', 'turn on debug output', false)
 	.parse(process.argv);
 

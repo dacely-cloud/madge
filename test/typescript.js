@@ -2,7 +2,6 @@
 'use strict';
 
 const madge = require('../lib/api');
-const ts = require('typescript');
 require('should');
 
 describe('TypeScript', () => {
@@ -45,15 +44,8 @@ describe('TypeScript', () => {
 
 	it('got tsConfig as a string, "extends" field is interpreted', (done) => {
 		madge(dir + '/custom-paths/import.ts', {tsConfig: dir + '/with-config/tsconfig.json'}).then((res) => {
-			res.config.tsConfig.should.eql({
-				extends: './tsconfig.base.json',
-				compilerOptions: {
-					target: ts.ScriptTarget.ESNext,
-					module: ts.ModuleKind.CommonJS,
-					allowJs: true,
-					configFilePath: undefined
-				}
-			});
+			res.config.tsConfig.should.equal(dir + '/with-config/tsconfig.json');
+			res.obj().should.have.property('import.ts');
 			done();
 		}).catch(done);
 	});

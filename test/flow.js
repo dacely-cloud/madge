@@ -21,7 +21,8 @@ describe('Flow', () => {
 		madge(dir + '/cjs/calc.js').then((res) => {
 			res.obj().should.eql({
 				'geometry.js': [],
-				'calc.js': ['geometry.js']
+				'math.js': [],
+				'calc.js': ['geometry.js', 'math.js']
 			});
 			done();
 		}).catch(done);
