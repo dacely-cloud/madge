@@ -3,19 +3,17 @@
 
 const path = require('path');
 const process = require('process');
-const program = require('commander');
+const {program} = require('commander');
 const rc = require('rc')('madge');
 const version = require('../package.json').version;
-const ora = require('ora');
-const chalk = require('chalk');
+const ora = require('ora').default;
+const chalk = require('chalk').default;
 const startTime = Date.now();
-
-// Revert https://github.com/tj/commander.js/pull/1409
-program.storeOptionsAsProperties();
 
 program
 	.version(version)
 	.usage('[options] <src...>')
+	.argument('[src...]')
 	.option('-b, --basedir <path>', 'base directory for resolving paths')
 	.option('-s, --summary', 'show dependency count summary')
 	.option('-c, --circular', 'show circular dependencies')
@@ -33,25 +31,27 @@ program
 	.option('--webpack-config <file>', 'path to webpack config')
 	.option('--ts-config <file>', 'path to typescript config')
 	.option('--include-npm', 'include shallow NPM modules', false)
-	.option('--no-color', 'disable color in output and image', false)
-	.option('--no-spinner', 'disable progress spinner', false)
-	.option('--no-count', 'disable circular dependencies counting', false)
+	.option('--no-color', 'disable color in output and image')
+	.option('--no-spinner', 'disable progress spinner')
+	.option('--no-count', 'disable circular dependencies counting')
 	.option('--stdin', 'read predefined tree from STDIN', false)
 	.option('--warning', 'show warnings about skipped files', false)
 	.option('--strict', 'fail on source parse errors or unresolved local imports', false)
 	.option('--debug', 'turn on debug output', false)
 	.parse(process.argv);
 
-if (!program.args.length && !program.stdin) {
+const options = program.opts();
+
+if (!program.args.length && !options.stdin) {
 	console.log(program.helpInformation());
 	process.exit(1);
 }
 
-if (program.debug) {
+if (options.debug) {
 	process.env.DEBUG = '*';
 }
 
-if (!program.color) {
+if (!options.color) {
 	process.env.DEBUG_COLORS = false;
 }
 
@@ -62,14 +62,14 @@ const madge = require('../lib/api');
 let packageConfig = {};
 try {
 	packageConfig = require(path.join(process.cwd(), 'package.json')).madge;
-} catch (e) { }
+} catch { }
 const config = Object.assign(rc, packageConfig);
 
 program.options.forEach((opt) => {
 	const name = opt.name();
 
-	if (program[name]) {
-		config[name] = program[name];
+	if (options[name]) {
+		config[name] = options[name];
 	}
 });
 
@@ -77,7 +77,7 @@ const spinner = ora({
 	text: 'Finding files',
 	color: 'white',
 	interval: 100000,
-	isEnabled: program.spinner === 'false' ? false : null
+	isEnabled: options.spinner === 'false' ? false : null
 });
 
 let exitCode = 0;
@@ -90,35 +90,35 @@ if (rc.config) {
 	log('using runtime config %s', rc.config);
 }
 
-if (program.basedir) {
-	config.baseDir = program.basedir;
+if (options.basedir) {
+	config.baseDir = options.basedir;
 }
 
-if (program.exclude) {
-	config.excludeRegExp = [program.exclude];
+if (options.exclude) {
+	config.excludeRegExp = [options.exclude];
 }
 
-if (program.extensions) {
-	config.fileExtensions = program.extensions.split(',').map((s) => s.trim());
+if (options.extensions) {
+	config.fileExtensions = options.extensions.split(',').map((s) => s.trim());
 }
 
-if (program.requireConfig) {
-	config.requireConfig = program.requireConfig;
+if (options.requireConfig) {
+	config.requireConfig = options.requireConfig;
 }
 
-if (program.webpackConfig) {
-	config.webpackConfig = program.webpackConfig;
+if (options.webpackConfig) {
+	config.webpackConfig = options.webpackConfig;
 }
 
-if (program.tsConfig) {
-	config.tsConfig = program.tsConfig;
+if (options.tsConfig) {
+	config.tsConfig = options.tsConfig;
 }
 
-if (program.includeNpm) {
-	config.includeNpm = program.includeNpm;
+if (options.includeNpm) {
+	config.includeNpm = options.includeNpm;
 }
 
-if (!program.color) {
+if (!options.color) {
 	config.backgroundColor = '#ffffff';
 	config.nodeColor = '#000000';
 	config.noDependencyColor = '#000000';
@@ -126,8 +126,8 @@ if (!program.color) {
 	config.edgeColor = '#757575';
 }
 
-if (program.rankdir) {
-	config.rankdir = program.rankdir;
+if (options.rankdir) {
+	config.rankdir = options.rankdir;
 }
 
 function dependencyFilter() {
@@ -147,7 +147,7 @@ function dependencyFilter() {
 }
 
 new Promise((resolve, reject) => {
-	if (program.stdin) {
+	if (options.stdin) {
 		let buffer = '';
 
 		process.stdin
@@ -168,7 +168,7 @@ new Promise((resolve, reject) => {
 	}
 })
 	.then((src) => {
-		if (!program.json && !program.dot) {
+		if (!options.json && !options.dot) {
 			spinner.start();
 			config.dependencyFilter = dependencyFilter();
 		}
@@ -176,28 +176,28 @@ new Promise((resolve, reject) => {
 		return madge(src, config);
 	})
 	.then((res) => {
-		if (!program.json && !program.dot) {
+		if (!options.json && !options.dot) {
 			spinner.stop();
 			output.getResultSummary(res, startTime);
 		}
 
-		const result = createOutputFromOptions(program, res);
+		const result = createOutputFromOptions(options, res);
 		if (result !== undefined) {
 			return result;
 		}
 
 		output.list(res.obj(), {
-			json: program.json
+			json: options.json
 		});
 
 		return res;
 	})
 	.then((res) => {
-		if (program.warning && !program.json) {
+		if (options.warning && !options.json) {
 			output.warnings(res);
 		}
 
-		if (!program.json && !program.dot) {
+		if (!options.json && !options.dot) {
 			console.log('');
 		}
 
@@ -209,59 +209,59 @@ new Promise((resolve, reject) => {
 		process.exit(1);
 	});
 
-function createOutputFromOptions(program, res) {
-	if (program.summary) {
+function createOutputFromOptions(options, res) {
+	if (options.summary) {
 		output.summary(res.obj(), {
-			json: program.json
+			json: options.json
 		});
 
 		return res;
 	}
 
-	if (program.depends) {
-		output.modules(res.depends(program.depends), {
-			json: program.json
+	if (options.depends) {
+		output.modules(res.depends(options.depends), {
+			json: options.json
 		});
 
 		return res;
 	}
 
-	if (program.orphans) {
+	if (options.orphans) {
 		output.modules(res.orphans(), {
-			json: program.json
+			json: options.json
 		});
 
 		return res;
 	}
 
-	if (program.leaves) {
+	if (options.leaves) {
 		output.modules(res.leaves(), {
-			json: program.json
+			json: options.json
 		});
 
 		return res;
 	}
 
-	if (program.image) {
-		return res.image(program.image, program.circular).then((imagePath) => {
+	if (options.image) {
+		return res.image(options.image, options.circular).then((imagePath) => {
 			spinner.succeed(`${chalk.bold('Image created at')} ${chalk.cyan.bold(imagePath)}`);
 			return res;
 		});
 	}
 
-	if (program.dot) {
-		return res.dot(program.circular).then((output) => {
+	if (options.dot) {
+		return res.dot(options.circular).then((output) => {
 			process.stdout.write(output);
 			return res;
 		});
 	}
 
-	if (program.circular) {
+	if (options.circular) {
 		const circular = res.circular();
 
 		output.circular(spinner, res, circular, {
-			json: program.json,
-			printCount: program.count
+			json: options.json,
+			printCount: options.count
 		});
 
 		if (circular.length) {
